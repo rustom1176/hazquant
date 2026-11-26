@@ -27,18 +27,30 @@ enum ReportStatus {
   SHARED
 }
 
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  TRIALING
+}
+
 model Organization {
-  id          String       @id @default(cuid())
-  name        String
-  slug        String       @unique
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  users       Membership[]
-  projects    Project[]
-  substances  Substance[]
-  areas       Area[]
-  assessments Assessment[]
-  reports     Report[]
+  id              String             @id @default(cuid())
+  name            String
+  slug            String             @unique
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  users           Membership[]
+  projects        Project[]
+  substances      Substance[]
+  areas           Area[]
+  assessments     Assessment[]
+  reports         Report[]
+  assessmentLists AssessmentList[]
+  invites         Invite[]
+  referrals       Referral[]
+  coupons         CouponRedemption[]
+  subscriptions   Subscription[]
 }
 
 model User {
@@ -164,22 +176,23 @@ model Substance {
 }
 
 model Assessment {
-  id             String           @id @default(cuid())
+  id             String               @id @default(cuid())
   organizationId String
   projectId      String?
   areaId         String?
   ownerId        String?
   title          String
-  status         AssessmentStatus @default(DRAFT)
+  status         AssessmentStatus     @default(DRAFT)
   summary        String?
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  project        Project?         @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  area           Area?            @relation(fields: [areaId], references: [id], onDelete: SetNull)
-  owner          User?            @relation("AssessmentOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project        Project?             @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  area           Area?                @relation(fields: [areaId], references: [id], onDelete: SetNull)
+  owner          User?                @relation("AssessmentOwner", fields: [ownerId], references: [id], onDelete: SetNull)
   items          AssessmentItem[]
   reports        Report[]
+  listItems      AssessmentListItem[]
 
   @@index([organizationId, status])
   @@index([projectId, areaId])
@@ -213,6 +226,80 @@ model Report {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   assessment     Assessment?  @relation(fields: [assessmentId], references: [id], onDelete: SetNull)
   author         User?        @relation("ReportAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, status])
+}
+
+model AssessmentList {
+  id             String               @id @default(cuid())
+  organizationId String
+  name           String
+  description    String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  items          AssessmentListItem[]
+
+  @@index([organizationId, name])
+}
+
+model AssessmentListItem {
+  id               String         @id @default(cuid())
+  assessmentListId String
+  assessmentId     String
+  createdAt        DateTime       @default(now())
+  assessmentList   AssessmentList @relation(fields: [assessmentListId], references: [id], onDelete: Cascade)
+  assessment       Assessment     @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@unique([assessmentListId, assessmentId])
+}
+
+model Invite {
+  id             String       @id @default(cuid())
+  organizationId String
+  email          String
+  role           Role         @default(MEMBER)
+  token          String       @unique
+  acceptedAt     DateTime?
+  expiresAt      DateTime
+  createdAt      DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, email])
+}
+
+model Referral {
+  id             String       @id @default(cuid())
+  organizationId String
+  code           String
+  referredEmail  String?
+  status         String       @default("PENDING")
+  createdAt      DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, code])
+}
+
+model CouponRedemption {
+  id             String       @id @default(cuid())
+  organizationId String
+  code           String
+  appliedAt      DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, code])
+}
+
+model Subscription {
+  id             String             @id @default(cuid())
+  organizationId String
+  plan           String
+  status         SubscriptionStatus @default(TRIALING)
+  seats          Int                @default(1)
+  renewsAt       DateTime?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([organizationId, status])
 }

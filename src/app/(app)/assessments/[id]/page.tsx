@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { requireUser, getActiveMembership } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
@@ -43,13 +44,16 @@ export default async function AssessmentDetailPage({ params }: { params: { id: s
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div><h1 className="font-display text-3xl font-semibold">{assessment.title}</h1><p className="mt-1 text-sm text-muted">{assessment.summary || "No summary provided."}</p></div>
-        <form action={updateAssessmentStatus} className="flex items-center gap-2">
-          <input type="hidden" name="assessmentId" value={assessment.id} />
-          <select name="status" defaultValue={assessment.status} className="input py-2">
-            {["DRAFT","IN_REVIEW","APPROVED","ARCHIVED"].map(s => <option key={s} value={s}>{s.replace("_"," ")}</option>)}
-          </select>
-          <button className="btn-secondary" type="submit">Update</button>
-        </form>
+        <div className="flex flex-wrap gap-2">
+          <Link href={`/api/assessments/${assessment.id}/export`} className="btn-secondary" target="_blank">Export JSON</Link>
+          <form action={updateAssessmentStatus} className="flex items-center gap-2">
+            <input type="hidden" name="assessmentId" value={assessment.id} />
+            <select name="status" defaultValue={assessment.status} className="input py-2">
+              {["DRAFT","IN_REVIEW","APPROVED","ARCHIVED"].map(s => <option key={s} value={s}>{s.replace("_"," ")}</option>)}
+            </select>
+            <button className="btn-secondary" type="submit">Update</button>
+          </form>
+        </div>
       </div>
       <div className="grid gap-4 md:grid-cols-3">
         <div className="panel p-5"><p className="text-sm text-muted">Project</p><p className="mt-2 font-medium">{assessment.project?.name || "—"}</p></div>

@@ -1,4 +1,7 @@
-export default function AdminHelpFieldsPage() {
+import { requireRole } from "@/lib/rbac";
+
+export default async function AdminHelpFieldsPage() {
+  await requireRole(["OWNER", "ADMIN"]);
   const fields = [
     ["Assessment title", "Clear name describing process, location, and material."],
     ["Exposure route", "How people may be exposed: inhalation, dermal, ingestion, injection."],

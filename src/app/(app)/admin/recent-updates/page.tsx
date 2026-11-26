@@ -1,4 +1,7 @@
-export default function AdminRecentUpdatesPage() {
+import { requireRole } from "@/lib/rbac";
+
+export default async function AdminRecentUpdatesPage() {
+  await requireRole(["OWNER", "ADMIN"]);
   const updates = [
     "Assessment workflow actions added (status, item capture).",
     "Reports can be created, edited, and reviewed with assessment context.",

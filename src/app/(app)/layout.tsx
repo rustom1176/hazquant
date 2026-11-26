@@ -10,7 +10,12 @@ const nav = [
   { href: "/assessments", label: "Assessments" },
   { href: "/assessment-lists", label: "Lists" },
   { href: "/reports", label: "Reports" },
+  { href: "/exports", label: "Exports" },
   { href: "/users", label: "Users" },
+  { href: "/training", label: "Training" },
+  { href: "/company", label: "Company" },
+  { href: "/payment", label: "Billing" },
+  { href: "/my-account", label: "Account" },
   { href: "/admin", label: "Admin" },
 ];
 
@@ -39,3 +44,4 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     </div>
   );
 }
+

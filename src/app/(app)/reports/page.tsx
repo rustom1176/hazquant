@@ -22,7 +22,7 @@ export default async function ReportsPage() {
         <table className="w-full text-sm">
           <thead className="bg-surface text-left text-muted"><tr><th className="px-4 py-3">Title</th><th className="px-4 py-3">Assessment</th><th className="px-4 py-3">Status</th></tr></thead>
           <tbody>
-            {reports.map((r) => <tr key={r.id} className="border-t border-line"><td className="px-4 py-3 font-medium">{r.title}</td><td className="px-4 py-3 text-muted">{r.assessment?.title || "—"}</td><td className="px-4 py-3"><span className="badge">{r.status}</span></td></tr>)}
+            {reports.map((r) => <tr key={r.id} className="border-t border-line"><td className="px-4 py-3 font-medium"><Link href={`/reports/${r.id}`} className="text-brand-700 hover:underline">{r.title}</Link></td><td className="px-4 py-3 text-muted">{r.assessment?.title || "—"}</td><td className="px-4 py-3"><span className="badge">{r.status}</span></td></tr>)}
             {reports.length === 0 && <tr><td className="px-4 py-8 text-center text-muted" colSpan={3}>No reports yet.</td></tr>}
           </tbody>
         </table>

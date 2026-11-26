@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { requireUser, getActiveMembership } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
+import { updateAssessmentStatus, deleteAssessmentItem } from "./actions";
 
 export default async function AssessmentDetailPage({ params }: { params: { id: string } }) {
   const user = await requireUser();
@@ -42,7 +43,13 @@ export default async function AssessmentDetailPage({ params }: { params: { id: s
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div><h1 className="font-display text-3xl font-semibold">{assessment.title}</h1><p className="mt-1 text-sm text-muted">{assessment.summary || "No summary provided."}</p></div>
-        <span className="badge">{assessment.status.replace("_", " ")}</span>
+        <form action={updateAssessmentStatus} className="flex items-center gap-2">
+          <input type="hidden" name="assessmentId" value={assessment.id} />
+          <select name="status" defaultValue={assessment.status} className="input py-2">
+            {["DRAFT","IN_REVIEW","APPROVED","ARCHIVED"].map(s => <option key={s} value={s}>{s.replace("_"," ")}</option>)}
+          </select>
+          <button className="btn-secondary" type="submit">Update</button>
+        </form>
       </div>
       <div className="grid gap-4 md:grid-cols-3">
         <div className="panel p-5"><p className="text-sm text-muted">Project</p><p className="mt-2 font-medium">{assessment.project?.name || "—"}</p></div>
@@ -65,10 +72,24 @@ export default async function AssessmentDetailPage({ params }: { params: { id: s
 
       <div className="panel overflow-hidden">
         <div className="border-b border-line px-4 py-3 font-medium">Assessment items</div>
-        <table className="w-full text-sm"><thead className="bg-surface text-left text-muted"><tr><th className="px-4 py-3">Substance</th><th className="px-4 py-3">Quantity</th><th className="px-4 py-3">Exposure</th><th className="px-4 py-3">Risk</th></tr></thead>
+        <table className="w-full text-sm"><thead className="bg-surface text-left text-muted"><tr><th className="px-4 py-3">Substance</th><th className="px-4 py-3">Quantity</th><th className="px-4 py-3">Exposure</th><th className="px-4 py-3">Risk</th><th className="px-4 py-3"></th></tr></thead>
           <tbody>
-            {assessment.items.map((it) => <tr key={it.id} className="border-t border-line"><td className="px-4 py-3">{it.substance?.name || "—"}{it.controls ? <div className="mt-1 text-xs text-muted">{it.controls}</div> : null}</td><td className="px-4 py-3 text-muted">{[it.quantity, it.unit].filter(Boolean).join(" ") || "—"}</td><td className="px-4 py-3 text-muted">{it.exposure || "—"}</td><td className="px-4 py-3 text-muted">{it.riskRating ?? "—"}</td></tr>)}
-            {assessment.items.length === 0 && <tr><td className="px-4 py-8 text-center text-muted" colSpan={4}>No assessment items yet.</td></tr>}
+            {assessment.items.map((it) => (
+              <tr key={it.id} className="border-t border-line">
+                <td className="px-4 py-3">{it.substance?.name || "—"}{it.controls ? <div className="mt-1 text-xs text-muted">{it.controls}</div> : null}</td>
+                <td className="px-4 py-3 text-muted">{[it.quantity, it.unit].filter(Boolean).join(" ") || "—"}</td>
+                <td className="px-4 py-3 text-muted">{it.exposure || "—"}</td>
+                <td className="px-4 py-3 text-muted">{it.riskRating ?? "—"}</td>
+                <td className="px-4 py-3 text-right">
+                  <form action={deleteAssessmentItem}>
+                    <input type="hidden" name="itemId" value={it.id} />
+                    <input type="hidden" name="assessmentId" value={assessment.id} />
+                    <button className="text-xs font-medium text-red-600 hover:underline" type="submit">Remove</button>
+                  </form>
+                </td>
+              </tr>
+            ))}
+            {assessment.items.length === 0 && <tr><td className="px-4 py-8 text-center text-muted" colSpan={5}>No assessment items yet.</td></tr>}
           </tbody>
         </table>
       </div>

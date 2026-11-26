@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 const nav = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/projects", label: "Projects" },
+  { href: "/areas", label: "Areas" },
+  { href: "/substances", label: "Substances" },
   { href: "/assessments", label: "Assessments" },
   { href: "/reports", label: "Reports" },
 ];

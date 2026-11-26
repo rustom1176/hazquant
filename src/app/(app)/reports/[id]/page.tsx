@@ -1,5 +1,5 @@
-import { notFound } from "next/navigation";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { requireUser, getActiveMembership } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
 import { deleteReport } from "./actions";
@@ -23,6 +23,7 @@ export default async function ReportDetailPage({ params }: { params: { id: strin
           <p className="mt-1 text-sm text-muted">Status: {report.status} {report.author?.name ? `• Author: ${report.author.name}` : ""}</p>
         </div>
         <div className="flex gap-2">
+          <Link href={`/api/reports/${report.id}/export`} className="btn-secondary" target="_blank">Export JSON</Link>
           <Link href={`/reports/${report.id}/edit`} className="btn-secondary">Edit</Link>
           <form action={deleteReport}><input type="hidden" name="id" value={report.id} /><button className="btn-danger" type="submit">Delete</button></form>
         </div>

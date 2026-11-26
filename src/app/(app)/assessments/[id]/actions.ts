@@ -6,11 +6,12 @@ import { prisma } from "@/lib/prisma";
 
 const statuses = ["DRAFT", "IN_REVIEW", "APPROVED", "ARCHIVED"] as const;
 type AssessmentStatusValue = (typeof statuses)[number];
+const canWrite = (role?: string) => role === "OWNER" || role === "ADMIN" || role === "MEMBER";
 
 export async function updateAssessmentStatus(formData: FormData) {
   const user = await requireUser();
   const membership = await getActiveMembership(user.id);
-  if (!membership) return;
+  if (!membership || !canWrite(membership.role)) return;
   const assessmentId = String(formData.get("assessmentId") || "");
   const status = String(formData.get("status") || "");
   if (!statuses.includes(status as AssessmentStatusValue)) return;
@@ -23,7 +24,7 @@ export async function updateAssessmentStatus(formData: FormData) {
 export async function deleteAssessmentItem(formData: FormData) {
   const user = await requireUser();
   const membership = await getActiveMembership(user.id);
-  if (!membership) return;
+  if (!membership || !canWrite(membership.role)) return;
   const itemId = String(formData.get("itemId") || "");
   const assessmentId = String(formData.get("assessmentId") || "");
   const item = await prisma.assessmentItem.findFirst({ where: { id: itemId, assessment: { id: assessmentId, organizationId: membership.organizationId } }, select: { id: true } });

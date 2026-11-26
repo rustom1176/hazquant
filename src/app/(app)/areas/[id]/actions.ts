@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 export async function updateArea(formData: FormData) {
   const user = await requireUser();
   const membership = await getActiveMembership(user.id);
-  if (!membership) return;
+  if (!membership || !["OWNER","ADMIN","MEMBER"].includes(membership.role)) return;
   const id = String(formData.get("id") || "");
   const name = String(formData.get("name") || "").trim();
   if (!id || !name) return;
@@ -27,10 +27,11 @@ export async function updateArea(formData: FormData) {
 export async function deleteArea(formData: FormData) {
   const user = await requireUser();
   const membership = await getActiveMembership(user.id);
-  if (!membership) return;
+  if (!membership || !["OWNER","ADMIN","MEMBER"].includes(membership.role)) return;
   const id = String(formData.get("id") || "");
   const existing = await prisma.area.findFirst({ where: { id, organizationId: membership.organizationId }, select: { id: true } });
   if (!existing) return;
   await prisma.area.delete({ where: { id } });
   redirect("/areas");
 }
+

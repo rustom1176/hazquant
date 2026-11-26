@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 export async function updateProject(formData: FormData) {
   const user = await requireUser();
   const membership = await getActiveMembership(user.id);
-  if (!membership) return;
+  if (!membership || !["OWNER","ADMIN","MEMBER"].includes(membership.role)) return;
   const id = String(formData.get("id") || "");
   const name = String(formData.get("name") || "").trim();
   const description = String(formData.get("description") || "").trim();
@@ -21,10 +21,11 @@ export async function updateProject(formData: FormData) {
 export async function deleteProject(formData: FormData) {
   const user = await requireUser();
   const membership = await getActiveMembership(user.id);
-  if (!membership) return;
+  if (!membership || !["OWNER","ADMIN","MEMBER"].includes(membership.role)) return;
   const id = String(formData.get("id") || "");
   const existing = await prisma.project.findFirst({ where: { id, organizationId: membership.organizationId }, select: { id: true } });
   if (!existing) return;
   await prisma.project.delete({ where: { id } });
   redirect("/projects");
 }
+

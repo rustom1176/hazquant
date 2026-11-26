@@ -6,11 +6,12 @@ import { prisma } from "@/lib/prisma";
 
 const statuses = ["DRAFT", "GENERATED", "SHARED"] as const;
 type ReportStatusValue = (typeof statuses)[number];
+const canWrite = (role?: string) => role === "OWNER" || role === "ADMIN" || role === "MEMBER";
 
 export async function updateReport(formData: FormData) {
   const user = await requireUser();
   const membership = await getActiveMembership(user.id);
-  if (!membership) return;
+  if (!membership || !canWrite(membership.role)) return;
   const id = String(formData.get("id") || "");
   const title = String(formData.get("title") || "").trim();
   const status = String(formData.get("status") || "");
@@ -31,7 +32,7 @@ export async function updateReport(formData: FormData) {
 export async function deleteReport(formData: FormData) {
   const user = await requireUser();
   const membership = await getActiveMembership(user.id);
-  if (!membership) return;
+  if (!membership || !canWrite(membership.role)) return;
   const id = String(formData.get("id") || "");
   const existing = await prisma.report.findFirst({ where: { id, organizationId: membership.organizationId }, select: { id: true } });
   if (!existing) return;

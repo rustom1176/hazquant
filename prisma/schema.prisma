@@ -1,0 +1,166 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum AssessmentStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  ARCHIVED
+}
+
+enum ReportStatus {
+  DRAFT
+  GENERATED
+  SHARED
+}
+
+model Organization {
+  id          String       @id @default(cuid())
+  name        String
+  slug        String       @unique
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  users       Membership[]
+  projects    Project[]
+  substances  Substance[]
+  areas       Area[]
+  assessments Assessment[]
+  reports     Report[]
+}
+
+model User {
+  id            String       @id @default(cuid())
+  email         String       @unique
+  name          String?
+  passwordHash  String
+  emailVerified DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  memberships   Membership[]
+  assessments   Assessment[] @relation("AssessmentOwner")
+  reports       Report[]     @relation("ReportAuthor")
+}
+
+model Membership {
+  id             String       @id @default(cuid())
+  role           Role         @default(MEMBER)
+  userId         String
+  organizationId String
+  createdAt      DateTime     @default(now())
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@index([organizationId, role])
+}
+
+model Project {
+  id             String       @id @default(cuid())
+  organizationId String
+  name           String
+  description    String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  areas          Area[]
+  assessments    Assessment[]
+
+  @@index([organizationId, name])
+}
+
+model Area {
+  id             String       @id @default(cuid())
+  organizationId String
+  projectId      String?
+  name           String
+  location       String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project        Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  assessments    Assessment[]
+
+  @@index([organizationId, projectId])
+}
+
+model Substance {
+  id              String           @id @default(cuid())
+  organizationId  String
+  name            String
+  casNumber       String?
+  hazardClass     String?
+  notes           String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  organization    Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  assessmentItems AssessmentItem[]
+
+  @@index([organizationId, name])
+}
+
+model Assessment {
+  id             String           @id @default(cuid())
+  organizationId String
+  projectId      String?
+  areaId         String?
+  ownerId        String?
+  title          String
+  status         AssessmentStatus @default(DRAFT)
+  summary        String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project        Project?         @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  area           Area?            @relation(fields: [areaId], references: [id], onDelete: SetNull)
+  owner          User?            @relation("AssessmentOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  items          AssessmentItem[]
+  reports        Report[]
+
+  @@index([organizationId, status])
+  @@index([projectId, areaId])
+}
+
+model AssessmentItem {
+  id           String     @id @default(cuid())
+  assessmentId String
+  substanceId  String?
+  quantity     String?
+  unit         String?
+  exposure     String?
+  controls     String?
+  riskRating   Int?
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  substance    Substance? @relation(fields: [substanceId], references: [id], onDelete: SetNull)
+
+  @@index([assessmentId])
+}
+
+model Report {
+  id             String       @id @default(cuid())
+  organizationId String
+  assessmentId   String?
+  authorId       String?
+  title          String
+  status         ReportStatus @default(DRAFT)
+  content        String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  assessment     Assessment?  @relation(fields: [assessmentId], references: [id], onDelete: SetNull)
+  author         User?        @relation("ReportAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, status])
+}

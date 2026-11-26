@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HazQuant
 
-## Getting Started
+HazQuant is an independent, world-class hazard quantification and compliance workspace. It is inspired by hazmat assessment workflows and built as an original implementation.
 
-First, run the development server:
+## Status
+🔨 In Progress — active phased build on `develop`.
 
+## Current capabilities
+- Public landing page
+- Auth: register, sign in, password reset request/confirm (credentials)
+- Protected app shell with sign out
+- Org-scoped CRUD foundations: projects, areas, substances
+- Assessments: list/create/detail
+- Reports: list/create
+- Prisma/Postgres schema + seed script
+
+## Tech stack
+- Next.js 14 (App Router) + TypeScript
+- Tailwind CSS
+- Prisma ORM
+- PostgreSQL
+- Auth.js / NextAuth (credentials)
+- ESLint + TypeScript checks
+
+## Local setup
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Copy env:
+   ```bash
+   cp .env.example .env
+   ```
+3. Start Postgres (optional local docker):
+   ```bash
+   docker compose up -d
+   ```
+4. Generate Prisma client and push schema:
+   ```bash
+   npm run db:generate
+   npm run db:push
+   npm run db:seed
+   ```
+5. Run dev server:
+   ```bash
+   npm run dev
+   ```
+
+## Quality checks
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run lint
+npm run typecheck
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Security notes
+- No secrets committed; use `.env`.
+- Passwords hashed with bcrypt.
+- Password reset tokens are hashed, expiring, and one-time use.
+- App data queries scoped by organization membership.
+- External code/packages should be scanned before adoption.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Repo
+Public: https://github.com/rustom1176/hazquant

@@ -1,21 +1,36 @@
 import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
+import { getActiveMembership } from "@/lib/authz";
+import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
-const cards = [
-  { label: "Active assessments", value: "0", note: "Create your first assessment" },
-  { label: "Open controls", value: "0", note: "No pending controls" },
-  { label: "Reports generated", value: "0", note: "Generate when ready" },
-];
-
 export default async function DashboardPage() {
   const session = await auth();
+  const membership = session?.user?.id ? await getActiveMembership(session.user.id) : null;
+  const orgId = membership?.organizationId;
+  const [assessments, reports, projects, substances] = orgId
+    ? await Promise.all([
+        prisma.assessment.count({ where: { organizationId: orgId } }),
+        prisma.report.count({ where: { organizationId: orgId } }),
+        prisma.project.count({ where: { organizationId: orgId } }),
+        prisma.substance.count({ where: { organizationId: orgId } }),
+      ])
+    : [0, 0, 0, 0];
+
+  const cards = [
+    { label: "Assessments", value: String(assessments), note: "Total in workspace" },
+    { label: "Reports", value: String(reports), note: "Drafts and generated" },
+    { label: "Projects / Substances", value: `${projects} / ${substances}`, note: "Core records tracked" },
+  ];
+
   return (
     <div>
       <div className="mb-6">
         <h1 className="font-display text-3xl font-semibold text-ink">Dashboard</h1>
-        <p className="mt-1 text-sm text-muted">Welcome back{session?.user?.name ? `, ${session.user.name}` : ""}. Track assessments, controls, and reports.</p>
+        <p className="mt-1 text-sm text-muted">
+          Welcome back{session?.user?.name ? `, ${session.user.name}` : ""}. {membership?.organization?.name ? `Workspace: ${membership.organization.name}.` : ""}
+        </p>
       </div>
       <div className="grid gap-4 md:grid-cols-3">
         {cards.map((card) => (

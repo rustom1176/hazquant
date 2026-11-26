@@ -7,11 +7,11 @@ const display = Sora({ subsets: ["latin"], variable: "--font-display" });
 
 export const metadata: Metadata = {
   title: {
-    default: "HazQuant | Hazard Quantification & Compliance",
+    default: "HazQuant | Hazard Quantification & Compliance Intelligence",
     template: "%s | HazQuant",
   },
   description:
-    "HazQuant helps teams assess hazardous materials, document controls, and generate compliance-ready reports.",
+    "HazQuant is a premium workspace for hazardous material assessments, exposure controls, compliance reporting, and audit-ready safety operations.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

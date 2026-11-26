@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireUser, getActiveMembership } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
+import { deleteProject } from "./actions";
 
 export default async function ProjectDetailPage({ params }: { params: { id: string } }) {
   const user = await requireUser();
@@ -10,7 +12,13 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
   if (!project) notFound();
   return (
     <div className="space-y-6">
-      <div><h1 className="font-display text-3xl font-semibold">{project.name}</h1><p className="mt-1 text-sm text-muted">{project.description || "No description."}</p></div>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div><h1 className="font-display text-3xl font-semibold">{project.name}</h1><p className="mt-1 text-sm text-muted">{project.description || "No description."}</p></div>
+        <div className="flex gap-2">
+          <Link href={`/projects/${project.id}/edit`} className="btn-secondary">Edit</Link>
+          <form action={deleteProject}><input type="hidden" name="id" value={project.id} /><button className="btn-danger" type="submit">Delete</button></form>
+        </div>
+      </div>
       <div className="grid gap-4 md:grid-cols-3">
         <div className="panel p-5"><p className="text-sm text-muted">Areas</p><p className="mt-2 font-display text-3xl font-semibold text-brand-700">{project.areas.length}</p></div>
         <div className="panel p-5"><p className="text-sm text-muted">Assessments</p><p className="mt-2 font-display text-3xl font-semibold text-brand-700">{project.assessments.length}</p></div>

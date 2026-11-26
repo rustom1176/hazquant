@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireUser, getActiveMembership } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
+import { deleteArea } from "./[id]/actions";
 
 export default async function AreasPage() {
   const user = await requireUser();
@@ -14,10 +15,10 @@ export default async function AreasPage() {
       </div>
       <div className="panel overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-surface text-left text-muted"><tr><th className="px-4 py-3">Name</th><th className="px-4 py-3">Project</th><th className="px-4 py-3">Location</th></tr></thead>
+          <thead className="bg-surface text-left text-muted"><tr><th className="px-4 py-3">Name</th><th className="px-4 py-3">Project</th><th className="px-4 py-3">Location</th><th className="px-4 py-3"></th></tr></thead>
           <tbody>
-            {areas.map((a) => <tr key={a.id} className="border-t border-line"><td className="px-4 py-3 font-medium">{a.name}</td><td className="px-4 py-3 text-muted">{a.project?.name || "—"}</td><td className="px-4 py-3 text-muted">{a.location || "—"}</td></tr>)}
-            {areas.length === 0 && <tr><td className="px-4 py-8 text-center text-muted" colSpan={3}>No areas yet.</td></tr>}
+            {areas.map((a) => <tr key={a.id} className="border-t border-line"><td className="px-4 py-3 font-medium">{a.name}</td><td className="px-4 py-3 text-muted">{a.project?.name || "—"}</td><td className="px-4 py-3 text-muted">{a.location || "—"}</td><td className="px-4 py-3"><div className="flex justify-end gap-3"><Link href={`/areas/${a.id}/edit`} className="text-brand-700 hover:underline">Edit</Link><form action={deleteArea}><input type="hidden" name="id" value={a.id} /><button className="text-red-600 hover:underline" type="submit">Delete</button></form></div></td></tr>)}
+            {areas.length === 0 && <tr><td className="px-4 py-8 text-center text-muted" colSpan={4}>No areas yet.</td></tr>}
           </tbody>
         </table>
       </div>

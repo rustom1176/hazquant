@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { requireUser, getActiveMembership } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
@@ -27,7 +28,7 @@ export default async function AssessmentListDetailPage({ params }: { params: { i
   }
   return (
     <div className="space-y-6">
-      <div><h1 className="font-display text-3xl font-semibold">{list.name}</h1><p className="mt-1 text-sm text-muted">{list.description || "No description."}</p></div>
+      <div className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="font-display text-3xl font-semibold">{list.name}</h1><p className="mt-1 text-sm text-muted">{list.description || "No description."}</p></div><Link href={`/api/assessment-lists/${list.id}/export`} className="btn-secondary" target="_blank">Export JSON</Link></div>
       <form action={addItem} className="panel flex flex-col gap-3 p-4 sm:flex-row sm:items-end"><div className="flex-1"><label className="label" htmlFor="assessmentId">Add assessment</label><select className="input" id="assessmentId" name="assessmentId">{assessments.map(a => <option key={a.id} value={a.id}>{a.title}</option>)}</select></div><button className="btn-primary" type="submit">Add</button></form>
       <div className="panel overflow-hidden"><table className="w-full text-sm"><thead className="bg-surface text-left text-muted"><tr><th className="px-4 py-3">Assessment</th><th className="px-4 py-3">Status</th></tr></thead><tbody>
         {list.items.map(i => <tr key={i.id} className="border-t border-line"><td className="px-4 py-3">{i.assessment.title}</td><td className="px-4 py-3 text-muted">{i.assessment.status}</td></tr>)}

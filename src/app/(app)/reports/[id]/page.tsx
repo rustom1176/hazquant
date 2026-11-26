@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { requireUser, getActiveMembership } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
+import { deleteReport } from "./actions";
 
 export default async function ReportDetailPage({ params }: { params: { id: string } }) {
   const user = await requireUser();
@@ -21,7 +22,10 @@ export default async function ReportDetailPage({ params }: { params: { id: strin
           <h1 className="mt-1 font-display text-3xl font-semibold">{report.title}</h1>
           <p className="mt-1 text-sm text-muted">Status: {report.status} {report.author?.name ? `• Author: ${report.author.name}` : ""}</p>
         </div>
-        <span className="badge">{report.status}</span>
+        <div className="flex gap-2">
+          <Link href={`/reports/${report.id}/edit`} className="btn-secondary">Edit</Link>
+          <form action={deleteReport}><input type="hidden" name="id" value={report.id} /><button className="btn-danger" type="submit">Delete</button></form>
+        </div>
       </div>
 
       <div className="panel p-6">
